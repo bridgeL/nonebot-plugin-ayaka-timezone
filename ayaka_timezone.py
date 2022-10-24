@@ -30,7 +30,7 @@ async def tz_add():
 
     timezone = (timezone+8) % 24 - 8
 
-    st = app.group_storage("data", default={})
+    st = app.group_storage("data.json", default={})
     data: dict = st.load()
     data[name] = timezone
     st.save(data)
@@ -50,7 +50,7 @@ def get_info(name, timezone):
 
 @app.on_command("tz_list")
 async def tz_list():
-    data: dict = app.group_storage("data", default={}).load()
+    data: dict = app.group_storage("data.json", default={}).load()
     items = []
     for name, timezone in data.items():
         items.append(get_info(name, timezone))
@@ -66,7 +66,7 @@ async def tz():
         await app.send(app.help)
         return
 
-    data: dict = app.group_storage("data", default={}).load()
+    data: dict = app.group_storage("data.json", default={}).load()
     name = str(app.args[0])
     if name in data:
         timezone = data[name]
