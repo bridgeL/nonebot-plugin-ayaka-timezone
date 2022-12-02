@@ -15,7 +15,8 @@ app.help = """时区助手
 """
 
 
-@app.on_command("tz_add")
+@app.on.idle()
+@app.on.command("tz_add")
 async def tz_add():
     if len(app.args) < 2:
         await app.send(app.help)
@@ -30,10 +31,10 @@ async def tz_add():
 
     timezone = (timezone+8) % 24 - 8
 
-    st = app.group_storage("data.json", default={})
-    data: dict = st.load()
+    json_file = app.storage.group_path().json("data")
+    data: dict = json_file.load()
     data[name] = timezone
-    st.save(data)
+    json_file.save(data)
 
     await app.send("添加成功："+get_info(name, timezone))
 
@@ -48,9 +49,11 @@ def get_info(name, timezone):
     return f"[{name}] {timezone}"
 
 
-@app.on_command("tz_list")
+@app.on.idle()
+@app.on.command("tz_list")
 async def tz_list():
-    data: dict = app.group_storage("data.json", default={}).load()
+    json_file = app.storage.group_path().json("data")
+    data: dict = json_file.load()
     items = []
     for name, timezone in data.items():
         items.append(get_info(name, timezone))
@@ -60,13 +63,15 @@ async def tz_list():
         await app.send("目前没有设置任何时区转换")
 
 
-@app.on_command("tz")
+@app.on.idle()
+@app.on.command("tz")
 async def tz():
     if len(app.args) < 1:
         await app.send(app.help)
         return
 
-    data: dict = app.group_storage("data.json", default={}).load()
+    json_file = app.storage.group_path().json("data")
+    data: dict = json_file.load()
     name = str(app.args[0])
     if name in data:
         timezone = data[name]
