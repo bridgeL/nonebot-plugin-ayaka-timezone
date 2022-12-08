@@ -1,9 +1,10 @@
 import datetime
-from ayaka import AyakaApp
+from typing import Dict
+from ayaka import AyakaApp, AyakaConfig, AyakaInput
 
 app = AyakaApp("时区助手")
 app.help = """时区助手
-- tz_add <name> <timezone> 添加一条时区转换，例如
+- tz_add <name> <timezone> 添加一条时区转换，东八区为8，西八区为-8，例如
     tz_add 北京 8
     tz_add 伦敦 0
     tz_add 洛杉矶 -8
@@ -15,26 +16,36 @@ app.help = """时区助手
 """
 
 
+class UserInput(AyakaInput):
+    name: str
+    timezone: int
+
+
+class UserInputName(AyakaInput):
+    name: str = ""
+
+
+class Config(AyakaConfig):
+    __app_name__ = app.name
+    data: Dict[str, int] = {}
+
+
+config = Config()
+
+
 @app.on.idle()
 @app.on.command("tz_add")
-async def tz_add():
+async def tz_add(userinput: UserInput):
     if len(app.args) < 2:
         await app.send(app.help)
         return
 
-    name = str(app.args[0])
-    try:
-        timezone = int(str(app.args[1]))
-    except:
-        await app.send("timezone 参数格式错误，请输入纯数字，东八区为8，西八区为-8")
-        return
-
+    name = userinput.name
+    timezone = userinput.timezone
     timezone = (timezone+8) % 24 - 8
 
-    json_file = app.storage.group_path().json("data")
-    data: dict = json_file.load()
-    data[name] = timezone
-    json_file.save(data)
+    config.data[name] = timezone
+    config.save()
 
     await app.send("添加成功："+get_info(name, timezone))
 
@@ -52,8 +63,7 @@ def get_info(name, timezone):
 @app.on.idle()
 @app.on.command("tz_list")
 async def tz_list():
-    json_file = app.storage.group_path().json("data")
-    data: dict = json_file.load()
+    data = config.data
     items = []
     for name, timezone in data.items():
         items.append(get_info(name, timezone))
@@ -65,14 +75,13 @@ async def tz_list():
 
 @app.on.idle()
 @app.on.command("tz")
-async def tz():
-    if len(app.args) < 1:
+async def tz(userinput: UserInputName):
+    name = userinput.name
+    if not name:
         await app.send(app.help)
         return
 
-    json_file = app.storage.group_path().json("data")
-    data: dict = json_file.load()
-    name = str(app.args[0])
+    data = config.data
     if name in data:
         timezone = data[name]
     else:

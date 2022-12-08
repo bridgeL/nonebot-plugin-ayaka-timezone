@@ -1,4 +1,6 @@
-# 时区助手
+# 时区助手 0.2.0b0
+
+**注意：目前兼容性较差，如果有其他插件受到影响，请安装0.1.0版本**
 
 基于[ayaka](https://github.com/bridgeL/nonebot-plugin-ayaka)开发的 时区助手 插件
 
