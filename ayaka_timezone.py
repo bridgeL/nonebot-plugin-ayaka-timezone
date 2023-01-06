@@ -1,8 +1,8 @@
 import datetime
 from typing import Dict
-from ayaka import AyakaApp, AyakaConfig, AyakaInput
+from ayaka import AyakaBox, AyakaConfig
 
-app = AyakaApp("时区助手")
+app = AyakaBox("时区助手")
 app.help = """时区助手
 - tz_add <name> <timezone> 添加一条时区转换，东八区为8，西八区为-8，例如
     tz_add 北京 8
@@ -16,32 +16,23 @@ app.help = """时区助手
 """
 
 
-class UserInput(AyakaInput):
-    name: str
-    timezone: int
-
-
-class UserInputName(AyakaInput):
-    name: str = ""
-
-
 class Config(AyakaConfig):
-    __app_name__ = app.name
+    __config_name__ = app.name
     data: Dict[str, int] = {}
 
 
 config = Config()
 
 
-@app.on.idle()
-@app.on.command("tz_add")
-async def tz_add(userinput: UserInput):
-    if len(app.args) < 2:
+@app.on_cmd(cmds="tz_add")
+async def tz_add():
+    try:
+        name = str(app.args[0])
+        timezone = int(app.args[1])
+    except:
         await app.send(app.help)
         return
 
-    name = userinput.name
-    timezone = userinput.timezone
     timezone = (timezone+8) % 24 - 8
 
     config.data[name] = timezone
@@ -60,8 +51,7 @@ def get_info(name, timezone):
     return f"[{name}] {timezone}"
 
 
-@app.on.idle()
-@app.on.command("tz_list")
+@app.on_cmd(cmds="tz_list")
 async def tz_list():
     data = config.data
     items = []
@@ -73,10 +63,9 @@ async def tz_list():
         await app.send("目前没有设置任何时区转换")
 
 
-@app.on.idle()
-@app.on.command("tz")
-async def tz(userinput: UserInputName):
-    name = userinput.name
+@app.on_cmd(cmds="tz")
+async def tz():
+    name = str(app.arg)
     if not name:
         await app.send(app.help)
         return
