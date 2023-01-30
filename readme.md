@@ -1,4 +1,4 @@
-# 时区助手 0.4.0
+# 时区助手 0.4.1
 
 基于[ayaka](https://github.com/bridgeL/ayaka)开发的 时区助手 插件
 
